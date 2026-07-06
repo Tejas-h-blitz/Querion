@@ -1,151 +1,82 @@
-# Querion ⚡ — AI SQL Query Optimizer
+# Querion ⚡ — AI PostgreSQL Query Optimizer Workspace
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-Querion is a production-ready PostgreSQL performance tuning and query optimization web application. It executes read-only database explain plans safely, provides detailed performance diagnostics, renders interactive horizontal tree visualizations with D3.js, and suggests optimal query rewrites using Google Gemini 1.5 Flash.
+Querion is a production-grade query optimization workspace for PostgreSQL database administrators and backend engineers. It validates query plans safely within sandbox transactions, streams performance diagnostics via Server-Sent Events (SSE), suggests optimized query rewrites using Google Gemini, validates index recommendations using PostgreSQL's `hypopg` extension, and tracks historical regression runs with interactive charts.
 
 ---
 
-## 🏗️ Architecture
+## 🌟 Key Features
 
-```text
-               +-----------------------------------+
-               |        React (Next.js 16)         |
-               |  Monaco Editor / D3.js / Supabase |
-               +-----------------+-----------------+
-                                 |
-                                 | HTTP REST / JSON
-                                 v
-               +-----------------+-----------------+
-               |          FastAPI (Python)         |
-               +--------+-----------------+--------+
-                        |                 |
-                        | SQL / EXPLAIN   | HTTP JSON API
-                        v                 v
-            +-----------+-----------+   +-+-----------------+
-            | User's PostgreSQL DB  |   |  Google Gemini    |
-            | (Dynamic connection)  |   |   (API Service)   |
-            +-----------------------+   +-------------------+
-```
+* **Interactive Application Shell**: Modern workspace layout equipped with a global Command Palette (`⌘K`) for navigating views, switching DB connections, and executing tasks.
+* **Safe Sandbox Analysis**: Leverages `sqlglot` to block mutating commands (DDL/DML) and wraps optimization queries in read-only transaction blocks (`SET TRANSACTION READ ONLY`) with a `5000ms` execution timeout.
+* **Asynchronous SSE Streaming**: Offloads long-running `EXPLAIN ANALYZE` operations to background worker queues and streams pipeline progress updates in real-time.
+* **Multi-Tab Optimization Console**:
+  * **Plan Tree**: Toggle between visual D3.js interactive graphs and a side-by-side collapsible tree node comparison (Before vs. After).
+  * **AI Insights**: Automatically identifies query execution bottlenecks and flags severity ratings (Low, Medium, High).
+  * **Diff Viewer**: Displays side-by-side query syntax improvements side-by-side using the Monaco Editor.
+  * **Indexes**: Prompts index suggestions with an inline **Validate with HypoPG** button to measure planner cost reductions without storage writes.
+  * **History Trend**: Renders a custom interactive SVG graph showcasing historical performance trend runs.
+* **CI Integration**: Staged GitHub Action script linting scans PR diffs for `.sql` changes, executing planner analysis, and posting automated execution reports.
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Component | Technology | Description |
-| :--- | :--- | :--- |
-| **Frontend Framework** | Next.js 16 (App Router) | Modern React server-side and client rendering architecture. |
-| **Styling** | Tailwind CSS | Sleek dark-mode tokens and layout system. |
-| **SQL Editor** | Monaco Editor | Custom SQL syntax styling and side-by-side diff view. |
-| **Tree Visualizer** | D3.js | Interactive zoomable tree representing Postgres nodes. |
-| **Backend API** | FastAPI (Python) | High-performance, async web server routing. |
-| **Database Driver** | asyncpg / SQLAlchemy | Safe, non-blocking connection interface. |
-| **AI Optimizer** | Gemini 1.5 Flash | LLM performance tuner generating indexes and SQL rewrites. |
-| **User Persistence** | Supabase | Simple email/password authentication and logging. |
+* **Frontend**: Next.js 16 (App Router), Tailwind CSS, Monaco Editor, D3.js, Tabler Icons.
+* **Backend**: FastAPI (Python), SQLAlchemy, SQLite (persistence), `asyncpg` (driver), `sqlglot` (SQL AST engine).
+* **AI Engine**: Gemini 1.5 Flash.
 
 ---
 
 ## ⚙️ Environment Variables
 
 ### Backend (`backend/.env`)
-
-| Variable | Description |
-| :--- | :--- |
-| `GEMINI_API_KEY` | Google AI Studio access key for Gemini 1.5 Flash. |
-| `SUPABASE_URL` | Your Supabase project URL (e.g. `https://xxx.supabase.co`). |
-| `SUPABASE_SERVICE_KEY` | Supabase service role key (used securely by backend for CRUD logs). |
+```ini
+GEMINI_API_KEY=AIzaSy... # Google AI Studio api key
+```
 
 ### Frontend (`.env.local`)
-
-| Variable | Description |
-| :--- | :--- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL. |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase public anon key. |
-| `NEXT_PUBLIC_API_URL` | FastAPI backend URL (defaults to `http://localhost:8000`). |
+```ini
+NEXT_PUBLIC_API_URL=http://localhost:8000 # FastAPI backend server url
+```
 
 ---
 
 ## 🚀 Local Setup Instructions
 
-### Prerequisites
-- Node.js (v18+)
-- Python (3.9+)
-
-### 1. Database Setup (Supabase)
-Run the following SQL in your Supabase SQL Editor to create the query log table:
-
-```sql
-CREATE TABLE query_history (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id text NOT NULL,
-  original_query text NOT NULL,
-  optimized_query text NOT NULL,
-  issues jsonb,
-  index_recommendations jsonb,
-  original_exec_time_ms float,
-  optimized_exec_time_ms float,
-  improvement_pct float,
-  created_at timestamptz DEFAULT now()
-);
-```
-
-### 2. Backend Setup
-1. Navigate to the `backend/` directory:
+### 1. Run the Backend (FastAPI)
+1. Navigate to the backend directory:
    ```bash
    cd backend
    ```
-2. Create and configure your `.env` file containing `GEMINI_API_KEY`, `SUPABASE_URL`, and `SUPABASE_SERVICE_KEY`.
-3. Create a virtual environment and install dependencies:
+2. Create your virtual environment and install dependencies:
    ```bash
    python -m venv venv
-   source venv/bin/activate  # On Windows use: venv\Scripts\activate
+   # Activate on Windows:
+   .\venv\Scripts\Activate.ps1
+   # Activate on Unix:
+   source venv/bin/activate
+
    pip install -r requirements.txt
    ```
-4. Start the FastAPI server:
+3. Configure your `backend/.env` file with your `GEMINI_API_KEY`.
+4. Start the development server on port 8000:
    ```bash
-   uvicorn main:app --reload
+   uvicorn main:app --reload --port 8000
    ```
 
-### 3. Frontend Setup
-1. Return to the root folder.
-2. Create `.env.local` containing `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `NEXT_PUBLIC_API_URL`.
-3. Install packages and run development server:
+### 2. Run the Frontend (Next.js)
+1. Return to the root folder:
    ```bash
-   npm.cmd install
-   npm.cmd run dev
+   cd ..
    ```
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
-
----
-
-## 🔌 Connecting your Database
-Querion connects to your database dynamically on the client side.
-1. Enter your standard PostgreSQL connection string in the top header.
-   - Format: `postgresql://username:password@hostname:5432/databasename`
-2. This string is stored safely in your browser's local storage (`localStorage`). It is **never** logged, collected, or stored on our servers.
-3. The backend uses this string strictly to execute `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) <query>` to construct your query plan.
-
----
-
-## 📸 Screenshots
-
-*(Mock-up placeholders to show application layout)*
-
-```text
-+--------------------------------------------------------------------------------+
-| Querion v1.0   | postgresql://●●●●●●●●●●●●●●●●●●●●●●●●                     [Analyze] |
-+----------------+---------------------------------------------------------------+
-| HISTORY        | SQL QUERY EDITOR              | OPTIMIZATION REPORT           |
-|                |                               |                               |
-| SELECT * FROM  | SELECT * FROM orders          | [ AI Analysis ] [ Optimized ] |
-|                | JOIN users ON ...             |                               |
-| SELECT id FROM | WHERE users.email = 'x@x.com' | Seq Scan cost=14.50 rows=10   |
-|                |                               | Index Scan cost=4.20 rows=1   |
-|                |                               |                               |
-+--------------------------------------------------------------------------------+
-```
+2. Install packages and launch the dev server:
+   ```bash
+   npm install
+   npm run dev
+   ```
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
 ## 📄 License
-This project is licensed under the MIT License - see the LICENSE file for details.
+Licensed under the MIT License.
