@@ -390,9 +390,8 @@ export default function Home() {
       {/* Top sticky app navbar */}
       <nav className="h-14 border-b border-[#232333] bg-[#0A0A0F]/80 backdrop-blur-md px-6 flex items-center justify-between z-40 flex-shrink-0">
         <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center gap-2 hover:opacity-85 transition-opacity">
-            <IconDatabase size={24} className="text-[#7C6FE0]" />
-            <span className="font-bold text-sm tracking-tight font-mono text-white">Querion</span>
+          <Link href="/" className="flex items-center hover:opacity-85 transition-opacity">
+            <img src="/querion-logo.png" alt="Querion Logo" className="h-9 w-auto object-contain" />
           </Link>
           <div className="hidden md:flex items-center gap-4 text-xs font-semibold text-[#62627A]">
             <span className="text-[#7C6FE0] border-b-2 border-[#7C6FE0] py-4 px-1">Workspace</span>

@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { IconDatabase, IconBrandGoogle, IconArrowLeft } from '@tabler/icons-react';
+import { IconBrandGoogle, IconArrowLeft } from '@tabler/icons-react';
 import Link from 'next/link';
 
 function LoginForm() {
@@ -77,9 +77,8 @@ function LoginForm() {
   return (
     <div className="w-full max-w-md bg-[#0F0F15] border border-[#232333] p-8 rounded-2xl shadow-2xl space-y-6 z-10">
       <div className="flex flex-col items-center text-center">
-        <Link href="/" className="flex items-center gap-2 mb-4 hover:opacity-85 transition-opacity">
-          <IconDatabase size={32} className="text-[#7C6FE0]" />
-          <span className="text-xl font-bold tracking-tight text-white font-mono">Querion</span>
+        <Link href="/" className="flex items-center justify-center mb-4 hover:opacity-85 transition-opacity">
+          <img src="/querion-logo.png" alt="Querion Logo" className="h-12 w-auto object-contain" />
         </Link>
         <h2 className="text-lg font-bold text-slate-200">
           {isSignUp ? 'Create your account' : 'Sign in to Querion'}

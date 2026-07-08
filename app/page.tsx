@@ -9,10 +9,11 @@ import {
   useScroll, 
   useTransform, 
   useInView,
-  useReducedMotion
+  useReducedMotion,
+  useMotionValue,
+  useSpring
 } from 'framer-motion';
 import { 
-  IconDatabase, 
   IconCpu, 
   IconBrain, 
   IconCode, 
@@ -69,6 +70,51 @@ function DriftingMesh() {
         className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-[#AD9EE0]/4 blur-[120px]"
       />
     </div>
+  );
+}
+
+// Smooth hardware-accelerated radial spotlight tracking the cursor
+function MouseSpotlight() {
+  const mouseX = useMotionValue(-1000);
+  const mouseY = useMotionValue(-1000);
+  const shouldReduceMotion = useReducedMotion();
+
+  // Smooth the mouse movement using subtle spring physics
+  const springX = useSpring(mouseX, { stiffness: 120, damping: 20 });
+  const springY = useSpring(mouseY, { stiffness: 120, damping: 20 });
+
+  useEffect(() => {
+    if (shouldReduceMotion) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseX.set(e.clientX - 250); // Offset by half the width of the spotlight (500px)
+      mouseY.set(e.clientY - 250); // Offset by half the height of the spotlight (500px)
+    };
+
+    const handleMouseLeave = () => {
+      mouseX.set(-1000);
+      mouseY.set(-1000);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, [mouseX, mouseY, shouldReduceMotion]);
+
+  if (shouldReduceMotion) return null;
+
+  return (
+    <motion.div
+      style={{
+        x: springX,
+        y: springY,
+      }}
+      className="absolute w-[500px] h-[500px] rounded-full pointer-events-none z-0 bg-[radial-gradient(circle_at_center,rgba(124,111,224,0.25)_0%,rgba(124,111,224,0)_70%)] mix-blend-screen"
+    />
   );
 }
 
@@ -245,6 +291,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#09090D] text-slate-100 selection:bg-[#7C6FE0]/30 relative overflow-x-hidden font-sans">
       <DriftingMesh />
+      <MouseSpotlight />
 
       {/* 1. STICKY NAVBAR */}
       <motion.nav 
@@ -256,9 +303,8 @@ export default function LandingPage() {
         transition={{ duration: 0.3 }}
         className="fixed top-0 left-0 right-0 h-16 border-b z-50 flex items-center justify-between px-6 md:px-12 select-none"
       >
-        <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-          <IconDatabase className="w-7 h-7 text-[#7C6FE0]" />
-          <span className="font-bold text-lg tracking-tight font-mono text-white">Querion</span>
+        <div className="flex items-center cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+          <img src="/querion-logo.png" alt="Querion Logo" className="h-11 w-auto object-contain" />
         </div>
 
         {/* Desktop actions */}
@@ -301,15 +347,9 @@ export default function LandingPage() {
             <>
               <button 
                 onClick={() => { setAuthMode('signin'); setAuthModalOpen(true); }}
-                className="text-sm font-semibold text-slate-300 hover:text-white transition-colors cursor-pointer"
+                className="bg-[#6355C7] hover:bg-[#7C6FE0] text-slate-100 font-semibold text-xs px-5 py-2.5 rounded-xl transition-all shadow-md shadow-[#7C6FE0]/10 hover:shadow-[#7C6FE0]/20 active:scale-95 cursor-pointer border border-[#7C6FE0]/15"
               >
                 Log in
-              </button>
-              <button 
-                onClick={() => { setAuthMode('signup'); setAuthModalOpen(true); }}
-                className="bg-[#7C6FE0] hover:bg-[#6D60D0] text-white font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-md shadow-[#7C6FE0]/15 active:scale-95 cursor-pointer"
-              >
-                Get started
               </button>
             </>
           )}
@@ -331,10 +371,9 @@ export default function LandingPage() {
             className="fixed inset-0 bg-[#09090D] z-50 p-6 flex flex-col justify-between"
           >
             <div className="flex items-center justify-between border-b border-[#232333] pb-4">
-              <div className="flex items-center gap-2">
-                <IconDatabase className="w-7 h-7 text-[#7C6FE0]" />
-                <span className="font-bold text-lg tracking-tight font-mono text-white">Querion</span>
-              </div>
+              <div className="flex items-center">
+              <img src="/querion-logo.png" alt="Querion Logo" className="h-11 w-auto object-contain" />
+            </div>
               <button className="text-slate-200 cursor-pointer" onClick={() => setMobileMenuOpen(false)}>
                 <IconX size={24} />
               </button>
@@ -356,15 +395,9 @@ export default function LandingPage() {
                 <>
                   <button 
                     onClick={() => { setMobileMenuOpen(false); setAuthMode('signin'); setAuthModalOpen(true); }}
-                    className="w-full bg-[#13131A] text-slate-200 border border-[#232333] font-bold py-3 rounded-xl cursor-pointer"
+                    className="w-full bg-[#6355C7] hover:bg-[#7C6FE0] text-slate-100 font-bold py-3 rounded-xl cursor-pointer border border-[#7C6FE0]/15 transition-all shadow-md shadow-[#7C6FE0]/10 hover:shadow-[#7C6FE0]/20"
                   >
                     Log in
-                  </button>
-                  <button 
-                    onClick={() => { setMobileMenuOpen(false); setAuthMode('signup'); setAuthModalOpen(true); }}
-                    className="w-full bg-[#7C6FE0] text-white font-bold py-3 rounded-xl cursor-pointer"
-                  >
-                    Get started
                   </button>
                 </>
               )}
@@ -382,39 +415,39 @@ export default function LandingPage() {
           className="max-w-4xl space-y-6"
         >
           <motion.h1 
-            variants={itemVariants}
-            className="text-4xl md:text-6xl font-extrabold tracking-tight text-white leading-tight font-sans"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: "spring", stiffness: 80, damping: 18 }}
+            className="text-5xl md:text-7xl font-extrabold tracking-tight leading-tight font-sans mx-auto max-w-5xl"
           >
-            Every slow database query, <br />
-            <span className="bg-gradient-to-r from-[#7C6FE0] to-[#AD9EE0] bg-clip-text text-transparent">
-              explained and optimized.
+            <span className="bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent block">
+              PostgreSQL query tuning,
+            </span>
+            <span className="bg-gradient-to-r from-[#7C6FE0] to-[#AD9EE0] bg-clip-text text-transparent block mt-2">
+              planner verified.
             </span>
           </motion.h1>
 
           <motion.p 
             variants={itemVariants}
-            className="text-sm md:text-lg text-text-muted max-w-2xl mx-auto leading-relaxed"
+            className="text-sm md:text-lg text-[#62627A] max-w-xl mx-auto leading-relaxed font-medium"
           >
-            AI-powered PostgreSQL performance tuning validated against the real query planner, not just LLM guesses. Inspect cost reductions, mock indexes, and track trends.
+            Simulate index impact with HypoPG, run sandboxed query plans, and catch performance regressions before production.
           </motion.p>
 
           <motion.div 
             variants={itemVariants}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2"
           >
-            <button 
+            <motion.button 
               onClick={handleGetStarted}
-              className="w-full sm:w-auto bg-[#7C6FE0] hover:bg-[#6D60D0] text-white font-bold text-sm px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-[#7C6FE0]/25 active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+              whileHover={{ y: -2, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="group w-full sm:w-auto bg-[#6355C7] hover:bg-[#7C6FE0] text-white font-bold text-sm px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-[#7C6FE0]/15 hover:shadow-xl hover:shadow-[#7C6FE0]/30 flex items-center justify-center gap-2 cursor-pointer border border-[#7C6FE0]/20 duration-200"
             >
               Get started free
-              <IconArrowRight size={16} />
-            </button>
-            <button 
-              onClick={() => scrollToSection('features')}
-              className="w-full sm:w-auto bg-[#13131A] hover:bg-[#181824] text-slate-300 font-bold text-sm px-8 py-3.5 rounded-xl border border-[#232333] hover:border-[#7C6FE0]/30 transition-all cursor-pointer"
-            >
-              See how it works
-            </button>
+              <IconArrowRight size={16} className="group-hover:translate-x-1 transition-transform duration-200" />
+            </motion.button>
           </motion.div>
 
           <motion.div 
@@ -438,7 +471,10 @@ export default function LandingPage() {
         <motion.div 
           ref={screenshotRef}
           style={{ y: shouldReduceMotion ? 0 : screenshotY }}
-          className="mt-14 max-w-5xl w-full bg-[#0F0F15] border border-[#232333] rounded-2xl overflow-hidden shadow-2xl relative group select-none pointer-events-none"
+          initial={{ opacity: 0.75 }}
+          whileHover={{ opacity: 0.95, scale: 1.005 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="mt-14 max-w-[1040px] w-full bg-[#0F0F15] border border-[#232333] hover:border-[#7C6FE0]/30 rounded-2xl overflow-hidden shadow-2xl hover:shadow-[#7C6FE0]/5 relative group select-none cursor-pointer mx-auto transition-all duration-500"
         >
           <div className="h-8 border-b border-[#232333] bg-[#0A0A0F] px-4 flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-full bg-[#232333]" />
@@ -448,44 +484,37 @@ export default function LandingPage() {
           </div>
           <div className="relative">
             <img 
-              src="https://jtyiwwovqbgjrsdbmkzw.supabase.co/storage/v1/object/public/assets/landing_mockup.png" 
+              src="/workspace-mockup.png" 
               alt="Querion Workspace Mockup" 
-              onError={(e) => {
-                // If remote asset isn't ready, fallback gracefully to a mock-up design representation
-                e.currentTarget.style.display = 'none';
-              }}
-              className="w-full object-cover" 
+              className="w-full h-[540px] object-cover object-top" 
             />
-            {/* Elegant placeholder when screenshot file is not found */}
-            <div className="w-full h-80 bg-gradient-to-b from-[#0F0F15] to-[#0A0A0F] flex flex-col items-center justify-center p-6 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-16 h-10 rounded border border-[#232333] bg-background/50 flex flex-col justify-center px-2">
-                  <div className="w-8 h-1 bg-[#7C6FE0] rounded" />
-                  <div className="w-10 h-1 bg-slate-700 rounded mt-1.5" />
-                </div>
-                <div className="w-16 h-10 rounded border border-[#232333] bg-background/50 flex flex-col justify-center px-2">
-                  <div className="w-10 h-1 bg-emerald-500 rounded" />
-                  <div className="w-8 h-1 bg-slate-700 rounded mt-1.5" />
-                </div>
-                <div className="w-16 h-10 rounded border border-[#232333] bg-background/50 flex flex-col justify-center px-2">
-                  <div className="w-6 h-1 bg-warning rounded" />
-                  <div className="w-10 h-1 bg-slate-700 rounded mt-1.5" />
-                </div>
-              </div>
-              <p className="text-xs text-text-muted max-w-sm">Visual Explain trees, index validation simulation and automated diff revisions at your fingertips.</p>
-            </div>
             <div className="absolute inset-0 bg-gradient-to-t from-[#09090D] via-transparent to-transparent" />
           </div>
         </motion.div>
       </header>
 
       {/* 3. FEATURES SECTION */}
-      <section id="features" className="py-24 px-6 md:px-12 max-w-6xl mx-auto z-10 relative">
-        <div className="text-center space-y-3 mb-16">
-          <h2 className="text-xs font-bold text-[#7C6FE0] uppercase tracking-widest font-mono">Performance Engine</h2>
-          <h3 className="text-2xl md:text-4xl font-bold text-white">Built for engineers who read query plans</h3>
-          <p className="text-sm text-text-muted max-w-xl mx-auto">Get deep visual planner insights, index verification and safety validation out of the box.</p>
-        </div>
+      <section 
+        id="features" 
+        className="py-24 px-6 md:px-12 relative overflow-hidden z-10"
+        style={{
+          backgroundImage: `
+            radial-gradient(circle at center, rgba(124, 111, 224, 0.12) 0%, transparent 60%),
+            linear-gradient(to right, rgba(124, 111, 224, 0.06) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(124, 111, 224, 0.06) 1px, transparent 1px)
+          `,
+          backgroundSize: '100% 100%, 40px 40px, 40px 40px',
+        }}
+      >
+        <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-[#232333]/80 to-transparent" />
+        
+        <div className="max-w-6xl mx-auto relative z-10">
+          <div className="text-center space-y-4 mb-16">
+            <h3 className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
+              Built for engineers who read query plans.
+            </h3>
+            <p className="text-sm text-text-muted max-w-xl mx-auto">Get deep visual planner insights, index verification and safety validation out of the box.</p>
+          </div>
 
         <motion.div 
           variants={listVariants}
@@ -562,47 +591,57 @@ export default function LandingPage() {
             </div>
           </motion.div>
         </motion.div>
+        </div>
       </section>
 
       {/* 4. HOW IT WORKS SECTION */}
-      <section id="how-it-works" className="py-24 border-t border-[#232333] bg-[#0A0A0F]/50 relative z-10 px-6">
+      <section 
+        id="how-it-works" 
+        className="py-24 border-t border-[#232333]/50 relative z-10 px-6 overflow-hidden bg-[#09090D]"
+        style={{
+          backgroundImage: `radial-gradient(circle at center, rgba(124, 111, 224, 0.035) 0%, transparent 70%)`
+        }}
+      >
         <div className="max-w-4xl mx-auto">
-          <div className="text-center space-y-3 mb-16">
-            <h2 className="text-xs font-bold text-[#7C6FE0] uppercase tracking-widest font-mono">Workflow</h2>
-            <h3 className="text-2xl md:text-4xl font-bold text-white">Three steps to optimal database query performance</h3>
+          <div className="text-center space-y-4 mb-16">
+            <h3 className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
+              Three steps to optimal database query performance.
+            </h3>
           </div>
 
-          <div className="relative border-l border-[#232333] ml-4 md:ml-8 pl-8 md:pl-12 space-y-12">
+          <div className="relative space-y-12">
+            {/* Connecting Vertical Line (centered exactly behind the w-8 circles) */}
+            <div className="absolute left-[16px] top-4 bottom-4 w-[1px] bg-[#232333] z-0 pointer-events-none" />
             
             {/* Step 1 */}
-            <div className="relative">
-              <div className="absolute top-1.5 left-[-42px] md:left-[-58px] w-6 h-6 md:w-8 md:h-8 rounded-full bg-[#7C6FE0] flex items-center justify-center text-xs md:text-sm font-bold text-white shadow-md shadow-[#7C6FE0]/20">
+            <div className="relative pl-14 group cursor-default">
+              <div className="absolute top-0.5 left-0 w-8 h-8 rounded-full bg-[#13131A] border border-[#232333] group-hover:border-[#7C6FE0] group-hover:bg-[#7C6FE0] group-hover:text-white flex items-center justify-center text-sm font-bold text-slate-400 shadow-md group-hover:shadow-[#7C6FE0]/25 transition-all duration-300 z-10 font-mono">
                 1
               </div>
-              <h4 className="font-bold text-lg text-slate-200 mb-1">Paste your query</h4>
-              <p className="text-sm text-text-muted leading-relaxed max-w-xl">
+              <h4 className="font-bold text-xl text-slate-200 mb-1.5 group-hover:text-[#7C6FE0] transition-colors duration-350">Paste your query</h4>
+              <p className="text-[15px] text-[#8C8CA5] leading-relaxed max-w-2xl">
                 Add your slow SQL query into the Monaco SQL input editor. Querion validates its structure and sanitizes it immediately using an offline AST safety parser.
               </p>
             </div>
 
             {/* Step 2 */}
-            <div className="relative">
-              <div className="absolute top-1.5 left-[-42px] md:left-[-58px] w-6 h-6 md:w-8 md:h-8 rounded-full bg-[#7C6FE0] flex items-center justify-center text-xs md:text-sm font-bold text-white shadow-md shadow-[#7C6FE0]/20">
+            <div className="relative pl-14 group cursor-default">
+              <div className="absolute top-0.5 left-0 w-8 h-8 rounded-full bg-[#13131A] border border-[#232333] group-hover:border-[#7C6FE0] group-hover:bg-[#7C6FE0] group-hover:text-white flex items-center justify-center text-sm font-bold text-slate-400 shadow-md group-hover:shadow-[#7C6FE0]/25 transition-all duration-300 z-10 font-mono">
                 2
               </div>
-              <h4 className="font-bold text-lg text-slate-200 mb-1">Run Sandbox & AI Optimizer</h4>
-              <p className="text-sm text-text-muted leading-relaxed max-w-xl">
+              <h4 className="font-bold text-xl text-slate-200 mb-1.5 group-hover:text-[#7C6FE0] transition-colors duration-350">Run Sandbox & AI Optimizer</h4>
+              <p className="text-[15px] text-[#8C8CA5] leading-relaxed max-w-2xl">
                 We trigger a dynamic read-only EXPLAIN plan against your database connection within a safe, auto-rolled-back transaction block, streaming step status back to you in real-time.
               </p>
             </div>
 
             {/* Step 3 */}
-            <div className="relative">
-              <div className="absolute top-1.5 left-[-42px] md:left-[-58px] w-6 h-6 md:w-8 md:h-8 rounded-full bg-[#7C6FE0] flex items-center justify-center text-xs md:text-sm font-bold text-white shadow-md shadow-[#7C6FE0]/20">
+            <div className="relative pl-14 group cursor-default">
+              <div className="absolute top-0.5 left-0 w-8 h-8 rounded-full bg-[#13131A] border border-[#232333] group-hover:border-[#7C6FE0] group-hover:bg-[#7C6FE0] group-hover:text-white flex items-center justify-center text-sm font-bold text-slate-400 shadow-md group-hover:shadow-[#7C6FE0]/25 transition-all duration-300 z-10 font-mono">
                 3
               </div>
-              <h4 className="font-bold text-lg text-slate-200 mb-1">Get Validated Improvements</h4>
-              <p className="text-sm text-text-muted leading-relaxed max-w-xl">
+              <h4 className="font-bold text-xl text-slate-200 mb-1.5 group-hover:text-[#7C6FE0] transition-colors duration-350">Get Validated Improvements</h4>
+              <p className="text-[15px] text-[#8C8CA5] leading-relaxed max-w-2xl">
                 Verify index suggestions using our integrated `hypopg` validation tool to verify plan improvements. Review side-by-side SQL diffs and bottleneck ratings.
               </p>
             </div>
@@ -612,37 +651,52 @@ export default function LandingPage() {
       </section>
 
       {/* 5. FINAL CTA SECTION */}
-      <section className="py-24 border-t border-[#232333] bg-[#0A0A0F] text-center z-10 relative overflow-hidden px-6">
-        <div className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] w-[80vw] h-[400px] bg-[#7C6FE0]/2 blur-[130px] pointer-events-none" />
-        
-        <div className="max-w-2xl mx-auto space-y-6 relative z-10">
-          <h2 className="text-3xl md:text-5xl font-extrabold text-white leading-tight">
-            Stop guessing why your SQL queries are slow
-          </h2>
-          <p className="text-sm text-text-muted max-w-md mx-auto leading-relaxed">
-            Validate index recommendations, audit explain execution paths, and secure your database optimization loops today.
-          </p>
-          <div className="pt-4">
-            <button 
-              onClick={handleGetStarted}
-              className="inline-flex items-center gap-2 bg-[#7C6FE0] hover:bg-[#6D60D0] text-white font-bold text-sm px-10 py-4 rounded-xl transition-all shadow-xl shadow-[#7C6FE0]/20 hover:shadow-[#7C6FE0]/35 active:scale-95 cursor-pointer border border-[#7C6FE0]/20"
-            >
-              Get started for free
-              <IconArrowRight size={16} />
-            </button>
+      <section className="py-24 px-6 md:px-12 relative z-10">
+        <div className="max-w-4xl mx-auto relative overflow-hidden bg-[#0A0A0F]/70 border border-[#232333] hover:border-[#7C6FE0]/30 hover:shadow-2xl hover:shadow-[#7C6FE0]/15 rounded-3xl p-12 md:p-16 text-center transition-all duration-500 group/card cursor-pointer">
+          {/* Subtle background glow inside the card */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[250px] bg-[#7C6FE0]/6 rounded-full blur-[100px] pointer-events-none" />
+          
+          <div className="relative z-10 space-y-6">
+            <h3 className="text-3xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent leading-tight max-w-3xl mx-auto">
+              Stop guessing why your <br />
+              <span className="bg-gradient-to-r from-[#7C6FE0] to-[#AD9EE0] bg-clip-text text-transparent block mt-2">
+                SQL queries are slow.
+              </span>
+            </h3>
+            <p className="text-sm text-text-muted max-w-lg mx-auto leading-relaxed">
+              Validate index recommendations, audit explain execution paths, and secure your database optimization loops today.
+            </p>
+            <div className="pt-4">
+              <motion.button 
+                onClick={handleGetStarted}
+                whileHover={{ y: -2, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="group inline-flex items-center gap-2 bg-[#6355C7] hover:bg-[#7C6FE0] text-white font-bold text-sm px-10 py-4 rounded-xl transition-all shadow-xl shadow-[#7C6FE0]/20 hover:shadow-2xl hover:shadow-[#7C6FE0]/35 cursor-pointer border border-[#7C6FE0]/20 duration-200"
+              >
+                Get started for free
+                <IconArrowRight size={16} className="group-hover:translate-x-1 transition-transform duration-200" />
+              </motion.button>
+            </div>
           </div>
         </div>
       </section>
 
       {/* 6. FOOTER */}
-      <footer className="py-12 border-t border-[#232333] bg-[#07070A] text-center px-6 z-10 relative">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-[#62627A] text-xs select-none">
-          <div className="flex items-center gap-2">
-            <IconDatabase className="w-5 h-5 text-[#7C6FE0]" />
-            <span className="font-bold text-sm text-slate-300 font-mono">Querion</span>
+      <footer className="py-12 border-t border-[#232333]/40 bg-[#07070A] px-6 md:px-12 z-10 relative">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 select-none text-[#62627A]">
+          {/* Logo & Tagline */}
+          <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
+            <div className="flex items-center hover:opacity-80 transition-opacity duration-300 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+              <img src="/querion-logo.png" alt="Querion Logo" className="h-10 w-auto object-contain" />
+            </div>
+            <span className="hidden md:inline text-[#232333]/40">|</span>
+            <span className="text-[13px] font-medium tracking-wide text-slate-400">
+              Sandboxed query plan analyzer and HypoPG index recommender for PostgreSQL.
+            </span>
           </div>
 
-          <div>
+          {/* Copyright */}
+          <div className="text-[13px] font-medium tracking-wide text-slate-400">
             &copy; {new Date().getFullYear()} Querion. All rights reserved.
           </div>
         </div>
@@ -677,9 +731,8 @@ export default function LandingPage() {
               </button>
 
               <div className="text-center">
-                <div className="flex justify-center gap-2 items-center mb-3">
-                  <IconDatabase className="w-8 h-8 text-[#7C6FE0]" />
-                  <span className="font-bold text-xl tracking-tight font-mono text-white">Querion</span>
+                <div className="flex justify-center items-center mb-3">
+                  <img src="/querion-logo.png" alt="Querion Logo" className="h-12 w-auto object-contain" />
                 </div>
                 <h3 className="text-base font-bold text-slate-200">
                   {authMode === 'signup' ? 'Create an account' : 'Welcome back'}
