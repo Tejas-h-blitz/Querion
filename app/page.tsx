@@ -288,6 +288,31 @@ export default function LandingPage() {
     show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 100, damping: 15 } }
   } as const;
 
+  const titleContainerVariants = {
+    hidden: {},
+    show: {
+      transition: {
+        staggerChildren: shouldReduceMotion ? 0 : 0.08,
+      }
+    }
+  } as const;
+
+  const titleWordVariants = {
+    hidden: { 
+      opacity: 0, 
+      y: shouldReduceMotion ? 0 : 20 
+    },
+    show: { 
+      opacity: 1, 
+      y: 0,
+      transition: {
+        type: "spring" as const,
+        stiffness: 100,
+        damping: 16
+      }
+    }
+  } as const;
+
   return (
     <div className="min-h-screen bg-[#09090D] text-slate-100 selection:bg-[#7C6FE0]/30 relative overflow-x-hidden font-sans">
       <DriftingMesh />
@@ -415,16 +440,38 @@ export default function LandingPage() {
           className="max-w-4xl space-y-6"
         >
           <motion.h1 
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ type: "spring", stiffness: 80, damping: 18 }}
-            className="text-5xl md:text-7xl font-extrabold tracking-tight leading-tight font-sans mx-auto max-w-5xl"
+            variants={titleContainerVariants}
+            className="text-5xl md:text-7xl font-bold tracking-tight md:tracking-tighter leading-[1.15] md:leading-[1.1] font-sans mx-auto max-w-5xl select-none"
           >
-            <span className="bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent block">
-              PostgreSQL query tuning,
+            <span className="block overflow-hidden pt-1 pb-2 md:pb-3 mb-[-8px] md:mb-[-12px]">
+              {"PostgreSQL query tuning,".split(" ").map((word, idx) => (
+                <motion.span
+                  key={idx}
+                  variants={titleWordVariants}
+                  className="inline-block mr-[0.15em] bg-gradient-to-b from-white via-[#f1f5f9] to-[#cbd5e1] bg-clip-text text-transparent pb-2 md:pb-3 pr-2"
+                >
+                  {word}
+                </motion.span>
+              ))}
             </span>
-            <span className="bg-gradient-to-r from-[#7C6FE0] to-[#AD9EE0] bg-clip-text text-transparent block mt-2">
-              planner verified.
+            <span className="block overflow-hidden pt-1 pb-2 md:pb-3 mt-1 md:mt-2">
+              <span className="relative inline-block">
+                {"planner verified.".split(" ").map((word, idx) => (
+                  <motion.span
+                    key={idx}
+                    variants={titleWordVariants}
+                    className="inline-block mr-[0.15em] bg-gradient-to-r from-[#e2e8f0] via-[#a5b4fc] to-[#818cf8] bg-clip-text text-transparent font-extrabold pb-2 md:pb-3 pr-2"
+                  >
+                    {word}
+                  </motion.span>
+                ))}
+                <motion.div 
+                  initial={shouldReduceMotion ? { scaleX: 1, opacity: 0.4 } : { scaleX: 0 }}
+                  animate={{ scaleX: 1, opacity: 1 }}
+                  transition={{ delay: 0.9, duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                  className="absolute bottom-[6px] md:bottom-[8px] left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#818cf8]/40 to-transparent origin-center"
+                />
+              </span>
             </span>
           </motion.h1>
 
@@ -510,7 +557,7 @@ export default function LandingPage() {
         
         <div className="max-w-6xl mx-auto relative z-10">
           <div className="text-center space-y-4 mb-16">
-            <h3 className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
+            <h3 className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent pb-3 pt-1 px-1">
               Built for engineers who read query plans.
             </h3>
             <p className="text-sm text-text-muted max-w-xl mx-auto">Get deep visual planner insights, index verification and safety validation out of the box.</p>
@@ -604,7 +651,7 @@ export default function LandingPage() {
       >
         <div className="max-w-4xl mx-auto">
           <div className="text-center space-y-4 mb-16">
-            <h3 className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
+            <h3 className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent pb-3 pt-1 px-1">
               Three steps to optimal database query performance.
             </h3>
           </div>
@@ -618,10 +665,12 @@ export default function LandingPage() {
               <div className="absolute top-0.5 left-0 w-8 h-8 rounded-full bg-[#13131A] border border-[#232333] group-hover:border-[#7C6FE0] group-hover:bg-[#7C6FE0] group-hover:text-white flex items-center justify-center text-sm font-bold text-slate-400 shadow-md group-hover:shadow-[#7C6FE0]/25 transition-all duration-300 z-10 font-mono">
                 1
               </div>
-              <h4 className="font-bold text-xl text-slate-200 mb-1.5 group-hover:text-[#7C6FE0] transition-colors duration-350">Paste your query</h4>
-              <p className="text-[15px] text-[#8C8CA5] leading-relaxed max-w-2xl">
-                Add your slow SQL query into the Monaco SQL input editor. Querion validates its structure and sanitizes it immediately using an offline AST safety parser.
-              </p>
+              <div className="transition-transform duration-300 ease-out origin-left group-hover:scale-[1.015]">
+                <h4 className="font-bold text-xl text-slate-200 mb-1.5 group-hover:text-[#7C6FE0] transition-colors duration-300">Paste your query</h4>
+                <p className="text-[15px] text-[#8C8CA5] leading-relaxed max-w-2xl transition-colors duration-300 group-hover:text-slate-300">
+                  Add your slow SQL query into the Monaco SQL input editor. Querion validates its structure and sanitizes it immediately using an offline AST safety parser.
+                </p>
+              </div>
             </div>
 
             {/* Step 2 */}
@@ -629,10 +678,12 @@ export default function LandingPage() {
               <div className="absolute top-0.5 left-0 w-8 h-8 rounded-full bg-[#13131A] border border-[#232333] group-hover:border-[#7C6FE0] group-hover:bg-[#7C6FE0] group-hover:text-white flex items-center justify-center text-sm font-bold text-slate-400 shadow-md group-hover:shadow-[#7C6FE0]/25 transition-all duration-300 z-10 font-mono">
                 2
               </div>
-              <h4 className="font-bold text-xl text-slate-200 mb-1.5 group-hover:text-[#7C6FE0] transition-colors duration-350">Run Sandbox & AI Optimizer</h4>
-              <p className="text-[15px] text-[#8C8CA5] leading-relaxed max-w-2xl">
-                We trigger a dynamic read-only EXPLAIN plan against your database connection within a safe, auto-rolled-back transaction block, streaming step status back to you in real-time.
-              </p>
+              <div className="transition-transform duration-300 ease-out origin-left group-hover:scale-[1.015]">
+                <h4 className="font-bold text-xl text-slate-200 mb-1.5 group-hover:text-[#7C6FE0] transition-colors duration-300">Run Sandbox & AI Optimizer</h4>
+                <p className="text-[15px] text-[#8C8CA5] leading-relaxed max-w-2xl transition-colors duration-300 group-hover:text-slate-300">
+                  We trigger a dynamic read-only EXPLAIN plan against your database connection within a safe, auto-rolled-back transaction block, streaming step status back to you in real-time.
+                </p>
+              </div>
             </div>
 
             {/* Step 3 */}
@@ -640,10 +691,12 @@ export default function LandingPage() {
               <div className="absolute top-0.5 left-0 w-8 h-8 rounded-full bg-[#13131A] border border-[#232333] group-hover:border-[#7C6FE0] group-hover:bg-[#7C6FE0] group-hover:text-white flex items-center justify-center text-sm font-bold text-slate-400 shadow-md group-hover:shadow-[#7C6FE0]/25 transition-all duration-300 z-10 font-mono">
                 3
               </div>
-              <h4 className="font-bold text-xl text-slate-200 mb-1.5 group-hover:text-[#7C6FE0] transition-colors duration-350">Get Validated Improvements</h4>
-              <p className="text-[15px] text-[#8C8CA5] leading-relaxed max-w-2xl">
-                Verify index suggestions using our integrated `hypopg` validation tool to verify plan improvements. Review side-by-side SQL diffs and bottleneck ratings.
-              </p>
+              <div className="transition-transform duration-300 ease-out origin-left group-hover:scale-[1.015]">
+                <h4 className="font-bold text-xl text-slate-200 mb-1.5 group-hover:text-[#7C6FE0] transition-colors duration-300">Get Validated Improvements</h4>
+                <p className="text-[15px] text-[#8C8CA5] leading-relaxed max-w-2xl transition-colors duration-300 group-hover:text-slate-300">
+                  Verify index suggestions using our integrated `hypopg` validation tool to verify plan improvements. Review side-by-side SQL diffs and bottleneck ratings.
+                </p>
+              </div>
             </div>
 
           </div>
@@ -657,9 +710,9 @@ export default function LandingPage() {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[250px] bg-[#7C6FE0]/6 rounded-full blur-[100px] pointer-events-none" />
           
           <div className="relative z-10 space-y-6">
-            <h3 className="text-3xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent leading-tight max-w-3xl mx-auto">
+            <h3 className="text-3xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent leading-tight max-w-3xl mx-auto pb-3 pt-1 px-1">
               Stop guessing why your <br />
-              <span className="bg-gradient-to-r from-[#7C6FE0] to-[#AD9EE0] bg-clip-text text-transparent block mt-2">
+              <span className="bg-gradient-to-r from-[#7C6FE0] to-[#AD9EE0] bg-clip-text text-transparent block mt-2 pb-2 px-1">
                 SQL queries are slow.
               </span>
             </h3>
