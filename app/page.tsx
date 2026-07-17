@@ -710,9 +710,11 @@ export default function LandingPage() {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[250px] bg-[#7C6FE0]/6 rounded-full blur-[100px] pointer-events-none" />
           
           <div className="relative z-10 space-y-6">
-            <h3 className="text-3xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent leading-tight max-w-3xl mx-auto pb-3 pt-1 px-1">
-              Stop guessing why your <br />
-              <span className="bg-gradient-to-r from-[#7C6FE0] to-[#AD9EE0] bg-clip-text text-transparent block mt-2 pb-2 px-1">
+            <h3 className="text-4xl md:text-6xl font-bold tracking-tight md:tracking-tighter leading-[1.15] md:leading-[1.1] font-sans mx-auto max-w-3xl select-none">
+              <span className="block bg-gradient-to-b from-white via-[#f1f5f9] to-[#cbd5e1] bg-clip-text text-transparent pb-1 md:pb-2">
+                Stop guessing why your
+              </span>
+              <span className="block mt-1 bg-gradient-to-r from-[#e2e8f0] via-[#a5b4fc] to-[#818cf8] bg-clip-text text-transparent font-extrabold pb-2">
                 SQL queries are slow.
               </span>
             </h3>
