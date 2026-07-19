@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { AnalyzeResponse, fetchFingerprintTrend, TrendRun } from '@/lib/api';
 import DiffViewer from './DiffViewer';
 import ExplainTree from './ExplainTree';
@@ -85,63 +86,98 @@ export default function AnalysisPanel({
   const optimizedPlan = analysisData.explain_data?.optimized;
 
   return (
-    <div className="w-full bg-[#0F0F15] border border-[#232333] rounded-xl shadow-xl flex flex-col overflow-hidden">
+    <div className="w-full bg-[#0A0A0F]/60 backdrop-blur-md border border-[#232333]/80 rounded-xl shadow-xl flex flex-col overflow-hidden">
       {/* Shell tabs */}
-      <div className="flex border-b border-[#232333] bg-[#0A0A0F] px-4 overflow-x-auto">
+      <div className="flex border-b border-[#232333]/80 bg-[#07070B] px-4 overflow-x-auto select-none">
         <button
           onClick={() => setActiveTab('explain')}
-          className={`flex items-center gap-2 py-3.5 px-5 border-b-2 text-sm font-semibold tracking-wide transition-all whitespace-nowrap cursor-pointer ${
+          className={`relative flex items-center gap-2 py-3.5 px-5 text-sm font-semibold tracking-wide transition-all whitespace-nowrap cursor-pointer ${
             activeTab === 'explain'
-              ? 'border-[#7C6FE0] text-[#7C6FE0]'
-              : 'border-transparent text-text-muted hover:text-foreground'
+              ? 'text-[#7C6FE0] font-bold'
+              : 'text-text-muted hover:text-slate-200'
           }`}
         >
-          <IconBinary className="w-4 h-4" />
-          Plan Tree
+          <IconBinary className="w-4.5 h-4.5" />
+          <span>Plan Tree</span>
+          {activeTab === 'explain' && (
+            <motion.div
+              layoutId="activeTabUnderline"
+              className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#7C6FE0]"
+              transition={{ type: "spring", stiffness: 380, damping: 30 }}
+            />
+          )}
         </button>
         <button
           onClick={() => setActiveTab('ai')}
-          className={`flex items-center gap-2 py-3.5 px-5 border-b-2 text-sm font-semibold tracking-wide transition-all whitespace-nowrap cursor-pointer ${
+          className={`relative flex items-center gap-2 py-3.5 px-5 text-sm font-semibold tracking-wide transition-all whitespace-nowrap cursor-pointer ${
             activeTab === 'ai'
-              ? 'border-[#7C6FE0] text-[#7C6FE0]'
-              : 'border-transparent text-text-muted hover:text-foreground'
+              ? 'text-[#7C6FE0] font-bold'
+              : 'text-text-muted hover:text-slate-200'
           }`}
         >
-          <IconBrain className="w-4 h-4" />
-          AI Insights
+          <IconBrain className="w-4.5 h-4.5" />
+          <span>AI Insights</span>
+          {activeTab === 'ai' && (
+            <motion.div
+              layoutId="activeTabUnderline"
+              className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#7C6FE0]"
+              transition={{ type: "spring", stiffness: 380, damping: 30 }}
+            />
+          )}
         </button>
         <button
           onClick={() => setActiveTab('diff')}
-          className={`flex items-center gap-2 py-3.5 px-5 border-b-2 text-sm font-semibold tracking-wide transition-all whitespace-nowrap cursor-pointer ${
+          className={`relative flex items-center gap-2 py-3.5 px-5 text-sm font-semibold tracking-wide transition-all whitespace-nowrap cursor-pointer ${
             activeTab === 'diff'
-              ? 'border-[#7C6FE0] text-[#7C6FE0]'
-              : 'border-transparent text-text-muted hover:text-foreground'
+              ? 'text-[#7C6FE0] font-bold'
+              : 'text-text-muted hover:text-slate-200'
           }`}
         >
-          <IconCode className="w-4 h-4" />
-          Diff Viewer
+          <IconCode className="w-4.5 h-4.5" />
+          <span>Diff Viewer</span>
+          {activeTab === 'diff' && (
+            <motion.div
+              layoutId="activeTabUnderline"
+              className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#7C6FE0]"
+              transition={{ type: "spring", stiffness: 380, damping: 30 }}
+            />
+          )}
         </button>
         <button
           onClick={() => setActiveTab('indexes')}
-          className={`flex items-center gap-2 py-3.5 px-5 border-b-2 text-sm font-semibold tracking-wide transition-all whitespace-nowrap cursor-pointer ${
+          className={`relative flex items-center gap-2 py-3.5 px-5 text-sm font-semibold tracking-wide transition-all whitespace-nowrap cursor-pointer ${
             activeTab === 'indexes'
-              ? 'border-[#7C6FE0] text-[#7C6FE0]'
-              : 'border-transparent text-text-muted hover:text-foreground'
+              ? 'text-[#7C6FE0] font-bold'
+              : 'text-text-muted hover:text-slate-200'
           }`}
         >
-          <IconDatabase className="w-4 h-4" />
-          Indexes
+          <IconDatabase className="w-4.5 h-4.5" />
+          <span>Indexes</span>
+          {activeTab === 'indexes' && (
+            <motion.div
+              layoutId="activeTabUnderline"
+              className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#7C6FE0]"
+              transition={{ type: "spring", stiffness: 380, damping: 30 }}
+            />
+          )}
         </button>
         <button
           onClick={() => setActiveTab('trend')}
-          className={`flex items-center gap-2 py-3.5 px-5 border-b-2 text-sm font-semibold tracking-wide transition-all whitespace-nowrap cursor-pointer ${
+          className={`relative flex items-center gap-2 py-3.5 px-5 text-sm font-semibold tracking-wide transition-all whitespace-nowrap cursor-pointer ${
             activeTab === 'trend'
-              ? 'border-[#7C6FE0] text-[#7C6FE0]'
-              : 'border-transparent text-text-muted hover:text-foreground'
+              ? 'text-[#7C6FE0] font-bold'
+              : 'text-text-muted hover:text-slate-200'
           }`}
         >
-          <IconChartLine className="w-4 h-4" />
-          History Trend
+          <IconChartLine className="w-4.5 h-4.5" />
+          <span>History Trend</span>
+          {activeTab === 'trend' && (
+            <motion.div
+              layoutId="activeTabUnderline"
+              className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#7C6FE0]"
+              transition={{ type: "spring", stiffness: 380, damping: 30 }}
+            />
+          )}
         </button>
       </div>
 

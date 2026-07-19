@@ -19,7 +19,7 @@ export default function DiffViewer({ original, modified }: DiffViewerProps) {
         { token: 'number', foreground: 'F59E0B' },
       ],
       colors: {
-        'editor.background': '#13131A',
+        'editor.background': '#09090D',
         'editor.foreground': '#E2E8F0',
         'editorLineNumber.foreground': '#313143',
         'editorLineNumber.activeForeground': '#6366F1',
@@ -31,7 +31,7 @@ export default function DiffViewer({ original, modified }: DiffViewerProps) {
   };
 
   return (
-    <div className="h-[400px] w-full border border-border rounded-lg overflow-hidden bg-surface flex flex-col">
+    <div className="h-[400px] w-full border border-[#232333]/85 rounded-xl overflow-hidden bg-[#09090D] flex flex-col shadow-inner">
       <DiffEditor
         height="100%"
         original={original}

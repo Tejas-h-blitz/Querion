@@ -48,7 +48,7 @@ export default function HistoryTrendChart({ runs }: HistoryTrendChartProps) {
   const regressions = runs.filter(r => r.regressed);
 
   return (
-    <div className="w-full bg-[#0A0A0F] border border-[#232333] rounded-xl p-5 shadow-lg flex flex-col space-y-4">
+    <div className="w-full bg-[#0A0A0F]/70 border border-[#232333]/80 backdrop-blur-sm rounded-xl p-5 shadow-lg flex flex-col space-y-4 select-none">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Performance Trend Chart</h3>

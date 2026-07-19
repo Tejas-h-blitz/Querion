@@ -68,10 +68,10 @@ export default function IndexRecommendations({
   }
 
   return (
-    <div className="w-full mt-6 bg-[#0B0B10] border border-[#232333] rounded-xl p-5 shadow-lg">
+    <div className="w-full mt-6 bg-[#0A0A0F]/70 border border-[#232333]/80 backdrop-blur-sm rounded-xl p-5 shadow-lg select-none">
       <div className="flex items-center gap-2 mb-4">
         <IconBulb className="w-5 h-5 text-warning" />
-        <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">Recommended Indexes</h3>
+        <h3 className="text-sm font-semibold text-slate-350 uppercase tracking-wider">Recommended Indexes</h3>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {recommendations.map((rec, idx) => {
@@ -81,17 +81,17 @@ export default function IndexRecommendations({
           return (
             <div 
               key={idx} 
-              className="flex flex-col justify-between p-4 bg-background border border-[#232333] rounded-xl hover:border-[#7C6FE0]/40 transition-colors group"
+              className="flex flex-col justify-between p-4 bg-[#09090D]/50 border border-[#232333]/80 rounded-xl hover:border-[#7C6FE0]/30 transition-colors group"
             >
               <div>
                 <div className="flex items-start justify-between gap-3">
-                  <code className="text-[11px] font-mono text-emerald-400 select-all break-all bg-slate-950 p-2.5 rounded-lg border border-border flex-1">
+                  <code className="text-[11px] font-mono text-emerald-400 select-all break-all bg-[#050508] p-2.5 rounded-lg border border-[#232333]/80 flex-1">
                     {rec.sql}
                   </code>
                   <div className="flex flex-col gap-1 flex-shrink-0">
                     <button
                       onClick={() => copyToClipboard(rec.sql, idx)}
-                      className="p-1.5 bg-surface hover:bg-[#20202F] text-slate-400 hover:text-foreground rounded border border-border transition-colors cursor-pointer"
+                      className="p-1.5 bg-[#13131A] hover:bg-[#1E1E2A] text-slate-400 hover:text-white rounded border border-[#232333] transition-colors cursor-pointer"
                       title="Copy SQL"
                     >
                       {copiedIdx === idx ? (

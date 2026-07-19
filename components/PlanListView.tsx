@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { IconChevronDown, IconChevronRight, IconCircleFilled } from '@tabler/icons-react';
+import { IconChevronDown, IconChevronRight, IconCircleFilled, IconHourglass } from '@tabler/icons-react';
 import { ExplainPlan } from '@/lib/api';
 
 interface PlanNodeRow {
@@ -49,8 +49,12 @@ export default function PlanListView({ originalTree, optimizedTree }: PlanListVi
   const renderNodeRows = (tree: ExplainPlan, label: string) => {
     if (!tree || !tree.node_type) {
       return (
-        <div className="flex-1 bg-[#0A0A0F] border border-[#232333] rounded-xl p-5 flex items-center justify-center text-text-muted text-xs italic">
-          Plan data unavailable for {label}.
+        <div className="flex-1 bg-[#0A0A0F]/45 border border-[#232333]/80 backdrop-blur-sm rounded-xl p-8 flex flex-col items-center justify-center text-center text-[#62627A] text-xs min-h-[220px]">
+          <IconHourglass size={20} className="text-[#62627A] mb-2.5 opacity-60 animate-pulse" />
+          <p className="font-semibold text-slate-400 mb-1">Plan data unavailable for {label}</p>
+          <p className="text-[10px] text-text-muted max-w-[200px] leading-relaxed">
+            Run optimization with database connection or migrations to view the {label.toLowerCase()} execution plan.
+          </p>
         </div>
       );
     }
@@ -76,8 +80,8 @@ export default function PlanListView({ originalTree, optimizedTree }: PlanListVi
     });
 
     return (
-      <div className="flex-1 bg-[#0A0A0F] border border-[#232333] rounded-xl p-5 overflow-x-auto flex flex-col min-w-0">
-        <h4 className="text-sm font-semibold text-slate-300 mb-4 border-b border-[#232333] pb-2.5 uppercase tracking-wider flex items-center gap-1.5">
+      <div className="flex-1 bg-[#0A0A0F]/50 backdrop-blur-md border border-[#232333]/80 rounded-xl p-5 overflow-x-auto flex flex-col min-w-0 shadow-lg">
+        <h4 className="text-sm font-semibold text-slate-300 mb-4 border-b border-[#232333]/60 pb-2.5 uppercase tracking-wider flex items-center gap-1.5 select-none">
           <IconCircleFilled size={8} className="text-[#7C6FE0]" /> {label} Plan
         </h4>
         <div className="space-y-1 min-w-[360px]">
@@ -86,6 +90,8 @@ export default function PlanListView({ originalTree, optimizedTree }: PlanListVi
             const nodeTime = node.actual_total_time;
             const nodeCost = node.cost;
             const dotColor = getDotColor(nodeTime, nodeCost);
+            const isSlow = nodeTime > 10 || nodeCost > 500;
+            const pulseClass = isSlow ? 'animate-pulse' : '';
 
             return (
               <div 
@@ -104,17 +110,23 @@ export default function PlanListView({ originalTree, optimizedTree }: PlanListVi
                   ) : (
                     <span className="w-[20px]" />
                   )}
-                  <IconCircleFilled size={8} className={`${dotColor} flex-shrink-0 animate-pulse`} />
-                  <span className="font-mono text-slate-200 font-semibold truncate">
+                  <IconCircleFilled size={8} className={`${dotColor} flex-shrink-0 ${pulseClass}`} />
+                  <span className="font-mono text-slate-200 font-semibold flex-shrink-0">
                     {node.node_type}
                   </span>
                   {node.relation_name && (
-                    <span className="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-lg font-mono truncate max-w-[140px]">
+                    <span 
+                      className="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-lg font-mono truncate max-w-[220px] flex-shrink"
+                      title={`on ${node.relation_name}`}
+                    >
                       on {node.relation_name}
                     </span>
                   )}
                   {node.index_name && (
-                    <span className="text-xs text-purple-400 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-lg font-mono truncate max-w-[140px]">
+                    <span 
+                      className="text-xs text-purple-400 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-lg font-mono truncate max-w-[220px] flex-shrink"
+                      title={`using ${node.index_name}`}
+                    >
                       using {node.index_name}
                     </span>
                   )}

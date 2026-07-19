@@ -33,7 +33,9 @@ import {
   IconFlame,
   IconHourglass,
   IconDownload,
-  IconHome
+  IconHome,
+  IconBrandGithub,
+  IconCode
 } from '@tabler/icons-react';
 
 export default function Home() {
@@ -422,7 +424,7 @@ export default function Home() {
             <div className="relative">
               <button
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-tr from-[#7C6FE0] to-[#AD9EE0] hover:opacity-90 active:scale-95 transition-all cursor-pointer text-white font-bold text-xs shadow-md shadow-[#7C6FE0]/15"
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-tr from-[#7C6FE0] to-[#AD9EE0] hover:opacity-90 active:scale-95 transition-all cursor-pointer text-white font-bold text-sm shadow-md shadow-[#7C6FE0]/15"
               >
                 {user.email?.substring(0, 2).toUpperCase()}
               </button>
@@ -536,10 +538,13 @@ export default function Home() {
                 <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">SQL Editor</div>
                 <div className="space-y-4">
                   {/* Active Connection state summary */}
-                  <div className="bg-[#0F0F15]/80 border border-[#232333]/85 rounded-xl p-3 space-y-1.5 shadow-sm">
-                    <div className="text-[9px] uppercase tracking-wider text-text-muted font-bold">Active Connection</div>
-                    <div className="flex items-center gap-2 text-xs text-slate-350 font-mono truncate">
-                      <span className={`w-1.5 h-1.5 rounded-full ${connectedStatus === 'connected' ? 'bg-success animate-pulse' : 'bg-red-500'}`} />
+                  <div className={`border rounded-xl p-3 space-y-1.5 transition-all duration-350 ${connectedStatus === 'connected'
+                      ? 'bg-emerald-500/5 border-emerald-500/20 shadow-md shadow-emerald-500/5'
+                      : 'bg-[#0F0F15]/80 border-[#232333]/85 shadow-sm'
+                    }`}>
+                    <div className="text-[9px] uppercase tracking-wider text-[#62627A] font-bold">Active Connection</div>
+                    <div className="flex items-center gap-2 text-xs text-slate-300 font-mono truncate">
+                      <span className={`w-1.5 h-1.5 rounded-full ${connectedStatus === 'connected' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
                       <span className="truncate">{connectionString ? parseConnectionName(connectionString) : "Disconnected"}</span>
                     </div>
                   </div>
@@ -702,15 +707,23 @@ export default function Home() {
 
           {/* Top bar with Connection Info */}
           <div className="h-14 border-b border-[#232333] bg-[#09090D] px-6 flex items-center justify-between gap-4">
-            <div className="flex-1 max-w-md relative flex items-center">
-              <IconSearch className="absolute left-3 text-[#62627A]" size={14} />
+            <div className="flex-1 max-w-md relative flex items-center group">
+              <IconSearch className="absolute left-3 text-[#62627A] group-hover:text-slate-400 transition-colors" size={14} />
               <input
                 type="text"
                 readOnly
                 onClick={() => setIsCommandPaletteOpen(true)}
                 placeholder="Search queries, switch views, run commands..."
-                className="w-full bg-[#0F0F15] hover:bg-[#13131D] border border-[#232333] rounded-lg py-1.5 pl-9 pr-4 text-xs text-slate-350 placeholder-[#62627A] outline-none transition-all cursor-pointer select-none"
+                className="w-full bg-[#0F0F15] hover:bg-[#13131D] border border-[#232333] rounded-lg py-1.5 pl-9 pr-14 text-xs text-slate-300 placeholder-[#62627A] outline-none transition-all cursor-pointer select-none shadow-sm"
               />
+              <div className="absolute right-2.5 flex items-center gap-0.5 pointer-events-none select-none">
+                <kbd className="hidden sm:inline-flex h-5 items-center gap-0.5 rounded border border-[#232333] bg-[#09090D] px-1.5 font-mono text-[9px] font-bold text-slate-500 shadow-sm">
+                  Ctrl
+                </kbd>
+                <kbd className="hidden sm:inline-flex h-5 items-center gap-0.5 rounded border border-[#232333] bg-[#09090D] px-1.5 font-mono text-[9px] font-bold text-slate-500 shadow-sm">
+                  K
+                </kbd>
+              </div>
             </div>
 
             <div className="flex items-center gap-3">
@@ -753,20 +766,49 @@ export default function Home() {
             >
 
               {/* Left: Query Editor */}
-              <div className="flex flex-col h-[520px] xl:h-auto space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">SQL Input Editor</span>
+              <div className="flex flex-col h-[520px] xl:h-auto border border-[#232333]/85 rounded-xl bg-[#09090D] overflow-hidden shadow-xl hover:border-[#7C6FE0]/30 transition-colors duration-300">
+                {/* IDE-Style Editor Tab Bar */}
+                <div className="h-10 bg-[#07070B] border-b border-[#232333]/80 px-4 flex items-center justify-between select-none">
+                  <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2 bg-[#0F0F15] px-3.5 py-2 border-r border-[#232333]/60 text-xs font-medium text-slate-200 border-t-2 border-t-[#7C6FE0]">
+                      <IconCode size={13} className="text-[#7C6FE0]" />
+                      <span>sandbox_query.sql</span>
+                      <span className="text-text-muted hover:text-white ml-1 cursor-pointer">×</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setQuery("SELECT * FROM orders \nJOIN users ON orders.user_id = users.id \nWHERE users.email = 'example@gmail.com';")}
+                      className="text-[10px] text-[#62627A] hover:text-slate-350 transition-colors font-semibold px-2 py-1 rounded hover:bg-[#13131D]"
+                      title="Reset to default query"
+                    >
+                      Reset
+                    </button>
+                    <button
+                      onClick={() => setQuery("")}
+                      className="text-[10px] text-[#62627A] hover:text-slate-355 transition-colors font-semibold px-2 py-1 rounded hover:bg-[#13131D]"
+                      title="Clear editor text"
+                    >
+                      Clear
+                    </button>
+                  </div>
                 </div>
-                <div className="flex-grow min-h-[360px]">
+
+                <div className="flex-grow min-h-[360px] relative">
                   <QueryEditor value={query} onChange={setQuery} onRun={handleAnalyze} />
                 </div>
-                <div className="flex items-center justify-end">
+
+                {/* Editor Action Footer bar */}
+                <div className="h-12 bg-[#07070B] border-t border-[#232333]/70 px-4 flex items-center justify-between">
+                  <div className="text-[10px] text-[#62627A] font-mono hidden sm:inline-block">
+                    Press <kbd className="px-1.5 py-0.5 rounded bg-[#13131D] border border-[#232333] text-slate-400">Ctrl</kbd> + <kbd className="px-1.5 py-0.5 rounded bg-[#13131D] border border-[#232333] text-slate-400">Enter</kbd> to run
+                  </div>
                   <motion.button
                     onClick={handleAnalyze}
                     disabled={isAnalyzing}
                     whileHover={{ scale: 1.01, y: -1 }}
                     whileTap={{ scale: 0.99 }}
-                    className="bg-[#7C6FE0] hover:bg-[#6D60D0] text-white font-semibold text-xs px-5 py-2.5 rounded-lg shadow-md shadow-[#7C6FE0]/15 hover:shadow-lg hover:shadow-[#7C6FE0]/30 transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer border border-[#7C6FE0]/20"
+                    className="bg-[#7C6FE0] hover:bg-[#6D60D0] text-white font-semibold text-xs px-5 py-2 rounded-lg shadow-md shadow-[#7C6FE0]/15 hover:shadow-lg hover:shadow-[#7C6FE0]/30 transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer border border-[#7C6FE0]/20"
                   >
                     {isAnalyzing ? (
                       <>
@@ -778,7 +820,7 @@ export default function Home() {
                       </>
                     ) : (
                       <>
-                        <IconPlayerPlay size={15} className="fill-current" />
+                        <IconPlayerPlay size={14} className="fill-current" />
                         Run Optimization
                       </>
                     )}
@@ -926,7 +968,7 @@ export default function Home() {
                       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
 
                         {/* Card 1: Execution Time (original) */}
-                        <div className="bg-[#0F0F15] border border-[#232333] p-4 rounded-xl shadow-md">
+                        <div className="bg-[#0A0A0F]/70 border border-[#232333]/80 backdrop-blur-sm p-4 rounded-xl shadow-md hover:border-[#7C6FE0]/30 transition-all duration-300">
                           <div className="text-xs text-text-muted font-mono uppercase font-semibold">Base Exec Time</div>
                           <div className="text-lg font-bold font-mono text-slate-200 mt-1">
                             {analysisData.original_exec_time_ms ? `${analysisData.original_exec_time_ms.toFixed(2)} ms` : 'N/A'}
@@ -934,7 +976,7 @@ export default function Home() {
                         </div>
 
                         {/* Card 2: Optimized Time */}
-                        <div className="bg-[#0F0F15] border border-[#232333] p-4 rounded-xl shadow-md">
+                        <div className="bg-[#0A0A0F]/70 border border-[#232333]/80 backdrop-blur-sm p-4 rounded-xl shadow-md hover:border-[#7C6FE0]/30 transition-all duration-300">
                           <div className="text-xs text-text-muted font-mono uppercase font-semibold">Opt Exec Time</div>
                           <div className={`text-lg font-bold font-mono mt-1 ${analysisData.improvement_pct > 0 ? 'text-emerald-400' : 'text-slate-200'
                             }`}>
@@ -943,7 +985,7 @@ export default function Home() {
                         </div>
 
                         {/* Card 3: Improvement % */}
-                        <div className="bg-[#0F0F15] border border-[#232333] p-4 rounded-xl shadow-md">
+                        <div className="bg-[#0A0A0F]/70 border border-[#232333]/80 backdrop-blur-sm p-4 rounded-xl shadow-md hover:border-[#7C6FE0]/30 transition-all duration-300">
                           <div className="text-xs text-text-muted font-mono uppercase font-semibold">Improvement</div>
                           <div className={`text-lg font-bold font-mono mt-1 ${analysisData.improvement_pct > 0 ? 'text-emerald-400' : 'text-slate-400'
                             }`}>
@@ -952,7 +994,7 @@ export default function Home() {
                         </div>
 
                         {/* Card 4: Issues Count */}
-                        <div className="bg-[#0F0F15] border border-[#232333] p-4 rounded-xl shadow-md">
+                        <div className="bg-[#0A0A0F]/70 border border-[#232333]/80 backdrop-blur-sm p-4 rounded-xl shadow-md hover:border-[#7C6FE0]/30 transition-all duration-300">
                           <div className="text-xs text-text-muted font-mono uppercase font-semibold">Issues Found</div>
                           <div className={`text-lg font-bold font-mono mt-1 ${analysisData.issues?.length > 0 ? 'text-amber-450' : 'text-slate-200'
                             }`}>
@@ -981,15 +1023,16 @@ export default function Home() {
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.4, ease: "easeOut" }}
-                      className="flex-grow bg-[#0F0F15]/55 backdrop-blur-md border border-[#232333]/80 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center space-y-5 shadow-inner relative overflow-hidden group"
+                      className="flex-grow bg-[#0A0A0F]/60 backdrop-blur-md border border-[#232333]/85 hover:border-[#7C6FE0]/30 transition-all duration-350 rounded-xl p-8 flex flex-col items-center justify-center text-center space-y-5 shadow-xl relative overflow-hidden group min-h-[360px]"
                     >
                       {/* Ambient radial accent inside empty state */}
-                      <div className="absolute -right-16 -top-16 w-32 h-32 rounded-full bg-[#7C6FE0]/5 blur-2xl group-hover:bg-[#7C6FE0]/10 transition-all duration-700 pointer-events-none" />
+                      <div className="absolute -right-16 -top-16 w-32 h-32 rounded-full bg-[#7C6FE0]/6 blur-2xl group-hover:bg-[#7C6FE0]/12 transition-all duration-750 pointer-events-none" />
+                      <div className="absolute -left-16 -bottom-16 w-32 h-32 rounded-full bg-[#AD9EE0]/4 blur-2xl group-hover:bg-[#AD9EE0]/8 transition-all duration-750 pointer-events-none" />
 
-                      <div className="p-4 bg-background border border-[#232333]/80 rounded-2xl text-slate-400 shadow-lg shadow-[#7C6FE0]/5 transition-transform duration-500 group-hover:scale-105">
+                      <div className="p-4 bg-[#111118]/80 border border-[#232333]/80 rounded-2xl text-slate-400 shadow-lg shadow-[#7C6FE0]/5 transition-transform duration-500 group-hover:scale-105">
                         <IconLayout className="w-11 h-11 text-[#7C6FE0]" />
                       </div>
-                      <div className="max-w-sm space-y-2 z-10">
+                      <div className="max-w-sm space-y-2 z-10 font-sans">
                         <h3 className="text-base font-semibold text-slate-200">Analyze your first query</h3>
                         <p className="text-sm text-text-muted leading-relaxed">
                           Input your database connection credentials on the left, add a SQL SELECT query in the editor, and click <strong className="text-slate-350">Run Optimization</strong>.

@@ -24,7 +24,8 @@ import {
   IconArrowRight, 
   IconLock, 
   IconTrendingUp, 
-  IconChevronRight 
+  IconChevronRight,
+  IconBrandGithub
 } from '@tabler/icons-react';
 import Link from 'next/link';
 
@@ -334,11 +335,20 @@ export default function LandingPage() {
 
         {/* Desktop actions */}
         <div className="hidden md:flex items-center gap-4">
+          <a
+            href="https://github.com/Tejas-h-blitz/Querion"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center w-10 h-10 rounded-full bg-[#13131A]/70 hover:bg-[#1C1C24] text-slate-350 hover:text-white border border-[#232333] hover:border-[#7C6FE0]/40 transition-all active:scale-95 cursor-pointer shadow-md"
+            title="GitHub Repository"
+          >
+            <IconBrandGithub size={20} />
+          </a>
           {user ? (
             <div className="relative">
               <button 
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-tr from-[#7C6FE0] to-[#AD9EE0] hover:opacity-90 active:scale-95 transition-all cursor-pointer text-white font-bold text-xs shadow-md shadow-[#7C6FE0]/15"
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-tr from-[#7C6FE0] to-[#AD9EE0] hover:opacity-90 active:scale-95 transition-all cursor-pointer text-white font-bold text-sm shadow-md shadow-[#7C6FE0]/15"
               >
                 {user.email?.substring(0, 2).toUpperCase()}
               </button>
@@ -426,6 +436,15 @@ export default function LandingPage() {
                   </button>
                 </>
               )}
+              <a
+                href="https://github.com/Tejas-h-blitz/Querion"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-[#13131A] text-slate-200 border border-[#232333] text-center font-bold py-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-all hover:bg-[#1C1C24]"
+              >
+                <IconBrandGithub size={18} />
+                GitHub Repository
+              </a>
             </div>
           </motion.div>
         )}
