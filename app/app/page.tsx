@@ -69,6 +69,7 @@ export default function Home() {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<'explain' | 'ai' | 'diff' | 'indexes' | 'trend'>('explain');
   const [activeSidebarTab, setActiveSidebarTab] = useState<'editor' | 'connections' | 'history'>('editor');
+  const [isResultsMaximized, setIsResultsMaximized] = useState<boolean>(false);
 
   // Batch analysis state
   const [isBatchMode, setIsBatchMode] = useState<boolean>(false);
@@ -230,6 +231,7 @@ export default function Home() {
       improvement_pct: item.improvement_pct || 0.0,
       explain_data: explainData
     });
+    setIsResultsMaximized(true);
   };
 
   const handleAddConnection = (e: React.FormEvent) => {
@@ -254,6 +256,7 @@ export default function Home() {
     setError(null);
     setIsAnalyzing(true);
     setAnalysisData(null);
+    setIsResultsMaximized(false);
     setIsBatchMode(false);
     setActiveHistoryId(undefined);
     setJobSteps({
@@ -312,6 +315,7 @@ export default function Home() {
           });
           setAnalysisData(data.data);
           setIsAnalyzing(false);
+          setIsResultsMaximized(true);
           setConnectedStatus('connected');
 
           // Save active connection and reload history sidebar list
@@ -762,11 +766,15 @@ export default function Home() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
-              className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch min-h-[500px]"
+              className={`grid grid-cols-1 gap-6 items-stretch min-h-[500px] transition-all duration-500 ${
+                isResultsMaximized ? 'xl:grid-cols-1' : 'xl:grid-cols-2'
+              }`}
             >
 
               {/* Left: Query Editor */}
-              <div className="flex flex-col h-[520px] xl:h-auto border border-[#232333]/85 rounded-xl bg-[#09090D] overflow-hidden shadow-xl hover:border-[#7C6FE0]/30 transition-colors duration-300">
+              <div className={`flex flex-col h-[520px] xl:h-auto border border-[#232333]/85 rounded-xl bg-[#09090D] overflow-hidden shadow-xl hover:border-[#7C6FE0]/30 transition-colors duration-300 ${
+                isResultsMaximized ? 'hidden' : ''
+              }`}>
                 {/* IDE-Style Editor Tab Bar */}
                 <div className="h-10 bg-[#07070B] border-b border-[#232333]/80 px-4 flex items-center justify-between select-none">
                   <div className="flex items-center gap-1">
@@ -829,9 +837,41 @@ export default function Home() {
               </div>
 
               {/* Right: Results or Loading Step List */}
-              <div className="flex flex-col h-[520px] xl:h-auto">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Optimization Results</span>
+              <div className="flex flex-col h-auto min-w-0">
+                <div className="flex items-center justify-between mb-2 select-none">
+                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    {isResultsMaximized ? 'Focus Mode: Optimization Results' : 'Optimization Results'}
+                  </span>
+                  {analysisData && (
+                    <div className="flex items-center gap-1 bg-[#0A0A0F]/80 border border-[#232333]/70 p-0.5 rounded-lg text-[10px] font-medium text-slate-400">
+                      <button
+                        onClick={() => setIsResultsMaximized(false)}
+                        className={`flex items-center gap-1 px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                          !isResultsMaximized 
+                            ? 'bg-[#7C6FE0] text-white font-semibold shadow-md shadow-[#7C6FE0]/15' 
+                            : 'hover:text-slate-200'
+                        }`}
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+                        </svg>
+                        <span>Split View</span>
+                      </button>
+                      <button
+                        onClick={() => setIsResultsMaximized(true)}
+                        className={`flex items-center gap-1 px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                          isResultsMaximized 
+                            ? 'bg-[#7C6FE0] text-white font-semibold shadow-md shadow-[#7C6FE0]/15' 
+                            : 'hover:text-slate-200'
+                        }`}
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
+                        </svg>
+                        <span>Focus View</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex-grow flex flex-col min-h-[360px] min-w-0">

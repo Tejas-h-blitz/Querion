@@ -149,6 +149,174 @@ function AnimatedCounter({ value, duration = 1.5 }: { value: number; duration?: 
   return <span ref={ref}>{count.toLocaleString()}</span>;
 }
 
+// Interactive dynamic visualizer showing how database query optimization works
+function TuningSimulator() {
+  const [step, setStep] = useState(0); // 0: Slow Query, 1: Simulating Index, 2: Optimized Plan
+  const shouldReduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    if (shouldReduceMotion) return;
+    const timer = setInterval(() => {
+      setStep((prev) => (prev + 1) % 3);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [shouldReduceMotion]);
+
+  const rawSql = `SELECT * FROM orders\nWHERE status = 'pending'\nORDER BY created_at DESC;`;
+  const indexSql = `CREATE INDEX idx_orders_status_created\nON orders (status, created_at DESC);`;
+
+  function highlightSQL(sql: string) {
+    return sql.split('\n').map((line, i) => {
+      const parts = line.split(/(\s+)/);
+      return (
+        <div key={i} className="font-mono text-[12px] leading-relaxed text-slate-350 select-none py-0.5">
+          {parts.map((part, j) => {
+            const trimmed = part.trim();
+            if (/^(SELECT|FROM|WHERE|JOIN|ON|ORDER\s+BY|CREATE\s+INDEX|CREATE|INDEX|CONCURRENTLY|DESC|AND)$/i.test(trimmed)) {
+              return <span key={j} className="text-[#a5b4fc] font-bold">{part}</span>;
+            }
+            if (/^'[^']*'$/.test(trimmed) || /^(orders|users)$/.test(trimmed)) {
+              return <span key={j} className="text-[#818cf8]">{part}</span>;
+            }
+            if (/^(idx_orders_status_created|status)$/.test(trimmed)) {
+              return <span key={j} className="text-emerald-400 font-semibold">{part}</span>;
+            }
+            return <span key={j}>{part}</span>;
+          })}
+        </div>
+      );
+    });
+  }
+
+  return (
+    <div className="w-full bg-[#0F0F15]/95 border border-[#232333]/85 hover:border-[#7C6FE0]/30 rounded-2xl overflow-hidden shadow-2xl transition-all duration-500 flex flex-col select-none">
+      {/* simulated IDE header */}
+      <div className="h-12 border-b border-[#232333] bg-[#0A0A0F] px-4 flex items-center justify-between select-none">
+        <div className="flex items-center gap-2">
+          <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
+          <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
+          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
+          <span className="text-xs font-mono text-[#62627A] ml-2">live_optimizer.sql</span>
+        </div>
+        <div className="flex items-center gap-1.5 text-[10px] font-mono bg-[#13131A] px-2.5 py-1 rounded text-[#7C6FE0] border border-[#7C6FE0]/15">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#7C6FE0] animate-pulse" />
+          <span>HypoPG Sandbox</span>
+        </div>
+      </div>
+
+      <div className="p-6 flex-1 flex flex-col space-y-4">
+        {/* Panel 1: SQL Code Box */}
+        <div className="bg-[#050508] border border-[#1C1C24] rounded-xl p-5 relative overflow-hidden min-h-[175px] flex flex-col justify-center transition-all duration-300">
+          <div className="absolute top-3 right-4 text-[9px] font-mono text-[#4A4A5E] tracking-wider select-none">SQL EDITOR</div>
+          <div className="space-y-1 font-mono">
+            {step === 0 && highlightSQL(rawSql)}
+            {step === 1 && (
+              <div className="space-y-2.5">
+                <div className="opacity-40 transition-opacity duration-300">{highlightSQL(rawSql)}</div>
+                <div className="border-t border-[#1C1C24]/60 pt-2.5">
+                  <div className="text-[10px] text-[#7C6FE0] font-bold mb-1 font-mono tracking-wider">RECOMMENDING INDEX:</div>
+                  <div className="animate-pulse">{highlightSQL(indexSql)}</div>
+                </div>
+              </div>
+            )}
+            {step === 2 && (
+              <div className="space-y-2.5">
+                <div>{highlightSQL(rawSql)}</div>
+                <div className="text-[10px] text-emerald-400 font-mono bg-emerald-950/20 border border-emerald-500/20 px-3 py-1.5 rounded-lg inline-flex items-center gap-1.5">
+                  <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Verified: Query planner is using Index Scan
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Panel 2: Live Metrics */}
+        <div className="grid grid-cols-3 gap-3.5">
+          
+          {/* Card A: Execution Time */}
+          <div className="bg-[#13131A]/60 border border-[#232333] p-4 rounded-xl flex flex-col justify-between h-[92px] transition-all duration-300 hover:border-[#7C6FE0]/25">
+            <span className="text-[10px] font-mono text-[#62627A] tracking-wider font-semibold">EXECUTION TIME</span>
+            <div className="font-bold text-base sm:text-lg select-none flex items-baseline gap-1 mt-2">
+              {step === 0 && <span className="text-red-400 font-mono">142 ms</span>}
+              {step === 1 && (
+                <span className="text-[#7C6FE0] animate-pulse text-xs font-mono">Calculating...</span>
+              )}
+              {step === 2 && (
+                <div className="flex flex-col xl:flex-row xl:items-baseline xl:gap-1.5">
+                  <span className="text-emerald-400 font-mono">0.6 ms</span>
+                  <span className="text-[9px] text-emerald-500 font-semibold font-mono">(-99%)</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Card B: Query Cost */}
+          <div className="bg-[#13131A]/60 border border-[#232333] p-4 rounded-xl flex flex-col justify-between h-[92px] transition-all duration-300 hover:border-[#7C6FE0]/25">
+            <span className="text-[10px] font-mono text-[#62627A] tracking-wider font-semibold">PLAN COST</span>
+            <div className="flex flex-col gap-2 mt-2">
+              <div className="font-bold text-base sm:text-lg select-none font-mono">
+                {step === 0 && <span className="text-red-400">8,420</span>}
+                {step === 1 && (
+                  <span className="text-[#7C6FE0] animate-pulse text-xs">Simulating...</span>
+                )}
+                {step === 2 && (
+                  <span className="text-emerald-400">42</span>
+                )}
+              </div>
+              <div className="w-full bg-[#232333] h-1.5 rounded-full overflow-hidden">
+                <motion.div 
+                  className={`h-full ${step === 0 ? 'bg-red-500' : step === 1 ? 'bg-[#7C6FE0]' : 'bg-emerald-500'}`}
+                  initial={{ width: "100%" }}
+                  animate={{ 
+                    width: step === 0 ? "100%" : step === 1 ? "60%" : "1.5%" 
+                  }}
+                  transition={{ duration: 0.6, ease: "easeInOut" }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Card C: Plan Operation */}
+          <div className="bg-[#13131A]/60 border border-[#232333] p-4 rounded-xl flex flex-col justify-between h-[92px] transition-all duration-300 hover:border-[#7C6FE0]/25">
+            <span className="text-[10px] font-mono text-[#62627A] tracking-wider font-semibold">SCAN TYPE</span>
+            <div className="flex items-center gap-1 font-bold text-sm select-none mt-2">
+              {step === 0 && (
+                <>
+                  <svg className="w-3.5 h-3.5 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span className="text-red-400 font-mono text-[11px] sm:text-xs">Seq Scan</span>
+                </>
+              )}
+              {step === 1 && (
+                <>
+                  <svg className="w-3.5 h-3.5 text-[#7C6FE0] animate-spin shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span className="text-[#7C6FE0] font-mono text-[11px] sm:text-xs">Tuning...</span>
+                </>
+              )}
+              {step === 2 && (
+                <>
+                  <svg className="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-emerald-400 font-mono text-[11px] sm:text-xs">Index Scan</span>
+                </>
+              )}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function LandingPage() {
   const router = useRouter();
   const shouldReduceMotion = useReducedMotion();
@@ -322,12 +490,13 @@ export default function LandingPage() {
       {/* 1. STICKY NAVBAR */}
       <motion.nav 
         animate={{ 
-          backgroundColor: isScrolled ? "rgba(10, 10, 15, 0.85)" : "rgba(9, 9, 13, 0)",
-          backdropFilter: isScrolled ? "blur(12px)" : "blur(0px)",
-          borderBottomColor: isScrolled ? "rgba(35, 35, 51, 0.5)" : "rgba(35, 35, 51, 0)"
+          height: isScrolled ? "64px" : "80px",
+          backgroundColor: isScrolled ? "rgba(9, 9, 13, 0.55)" : "rgba(9, 9, 13, 0)",
+          backdropFilter: isScrolled ? "blur(20px)" : "blur(0px)",
+          borderBottomColor: isScrolled ? "rgba(124, 111, 224, 0.15)" : "rgba(124, 111, 224, 0)"
         }}
-        transition={{ duration: 0.3 }}
-        className="fixed top-0 left-0 right-0 h-16 border-b z-50 flex items-center justify-between px-6 md:px-12 select-none"
+        transition={{ duration: 0.35, ease: "easeInOut" }}
+        className="fixed top-0 left-0 right-0 border-b z-50 flex items-center justify-between px-6 md:px-12 select-none"
       >
         <div className="flex items-center cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
           <img src="/querion-logo.png" alt="Querion Logo" className="h-11 w-auto object-contain" />
@@ -451,112 +620,151 @@ export default function LandingPage() {
       </AnimatePresence>
 
       {/* 2. HERO SECTION */}
-      <header className="relative min-h-screen pt-28 flex flex-col items-center justify-center px-6 text-center overflow-hidden z-10">
-        <motion.div 
-          variants={listVariants}
-          initial="hidden"
-          animate="show"
-          className="max-w-4xl space-y-6"
-        >
-          <motion.h1 
-            variants={titleContainerVariants}
-            className="text-5xl md:text-7xl font-bold tracking-tight md:tracking-tighter leading-[1.15] md:leading-[1.1] font-sans mx-auto max-w-5xl select-none"
-          >
-            <span className="block overflow-hidden pt-1 pb-2 md:pb-3 mb-[-8px] md:mb-[-12px]">
-              {"PostgreSQL query tuning,".split(" ").map((word, idx) => (
-                <motion.span
-                  key={idx}
-                  variants={titleWordVariants}
-                  className="inline-block mr-[0.15em] bg-gradient-to-b from-white via-[#f1f5f9] to-[#cbd5e1] bg-clip-text text-transparent pb-2 md:pb-3 pr-2"
-                >
-                  {word}
-                </motion.span>
-              ))}
-            </span>
-            <span className="block overflow-hidden pt-1 pb-2 md:pb-3 mt-1 md:mt-2">
-              <span className="relative inline-block">
-                {"planner verified.".split(" ").map((word, idx) => (
-                  <motion.span
-                    key={idx}
-                    variants={titleWordVariants}
-                    className="inline-block mr-[0.15em] bg-gradient-to-r from-[#e2e8f0] via-[#a5b4fc] to-[#818cf8] bg-clip-text text-transparent font-extrabold pb-2 md:pb-3 pr-2"
-                  >
-                    {word}
-                  </motion.span>
-                ))}
-                <motion.div 
-                  initial={shouldReduceMotion ? { scaleX: 1, opacity: 0.4 } : { scaleX: 0 }}
-                  animate={{ scaleX: 1, opacity: 1 }}
-                  transition={{ delay: 0.9, duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-                  className="absolute bottom-[6px] md:bottom-[8px] left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#818cf8]/40 to-transparent origin-center"
-                />
-              </span>
-            </span>
-          </motion.h1>
-
-          <motion.p 
-            variants={itemVariants}
-            className="text-sm md:text-lg text-[#62627A] max-w-xl mx-auto leading-relaxed font-medium"
-          >
-            Simulate index impact with HypoPG, run sandboxed query plans, and catch performance regressions before production.
-          </motion.p>
-
+      <header className="relative min-h-screen pt-32 lg:pt-0 flex items-center justify-center px-6 md:px-12 xl:px-24 overflow-hidden z-10">
+        <div className="max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center py-20 lg:py-0">
+          
+          {/* Left Column - Content */}
           <motion.div 
-            variants={itemVariants}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2"
+            variants={listVariants}
+            initial="hidden"
+            animate="show"
+            className="lg:col-span-6 flex flex-col items-center lg:items-start text-center lg:text-left space-y-6 z-10"
           >
-            <motion.button 
-              onClick={handleGetStarted}
-              whileHover={{ y: -2, scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="group w-full sm:w-auto bg-[#6355C7] hover:bg-[#7C6FE0] text-white font-bold text-sm px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-[#7C6FE0]/15 hover:shadow-xl hover:shadow-[#7C6FE0]/30 flex items-center justify-center gap-2 cursor-pointer border border-[#7C6FE0]/20 duration-200"
+            <motion.h1 
+              variants={titleContainerVariants}
+              className="text-3xl sm:text-5xl lg:text-[34px] xl:text-[44px] 2xl:text-5xl font-extrabold tracking-tight leading-[1.25] lg:leading-[1.15] font-sans select-none"
             >
-              Get started free
-              <IconArrowRight size={16} className="group-hover:translate-x-1 transition-transform duration-200" />
-            </motion.button>
-          </motion.div>
-
-          <motion.div 
-            variants={itemVariants}
-            className="pt-6 flex flex-wrap items-center justify-center gap-6 text-[#62627A] text-xs font-mono select-none"
-          >
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Validated by HypoPG</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>
-                <AnimatedCounter value={12480} />+ Queries Fixed
+              <span className="block overflow-hidden pt-1 pb-1">
+                <span className="block whitespace-nowrap">
+                  {"PostgreSQL query tuning,".split(" ").map((word, idx) => (
+                    <motion.span
+                      key={idx}
+                      variants={titleWordVariants}
+                      className="inline-block mr-[0.15em] bg-gradient-to-b from-white via-[#f1f5f9] to-[#cbd5e1] bg-clip-text text-transparent pb-1 pr-2"
+                    >
+                      {word}
+                    </motion.span>
+                  ))}
+                </span>
               </span>
-            </div>
-          </motion.div>
-        </motion.div>
+              <span className="block overflow-hidden pt-1 pb-2 mt-1">
+                <span className="relative inline-block whitespace-nowrap">
+                  {"planner verified.".split(" ").map((word, idx) => (
+                    <motion.span
+                      key={idx}
+                      variants={titleWordVariants}
+                      className="inline-block mr-[0.15em] bg-gradient-to-r from-[#e2e8f0] via-[#a5b4fc] to-[#818cf8] bg-clip-text text-transparent font-extrabold pb-1 pr-2"
+                    >
+                      {word}
+                    </motion.span>
+                  ))}
+                  <svg className="absolute bottom-[-10px] md:bottom-[-12px] left-0 w-full h-[8px] overflow-visible pointer-events-none" viewBox="0 0 100 10" preserveAspectRatio="none">
+                    {/* Blur Glow Layer */}
+                    <motion.path
+                      d="M 0,5 L 100,5"
+                      stroke="#818cf8"
+                      strokeWidth="6"
+                      strokeLinecap="round"
+                      className="blur-[3px] opacity-35"
+                      initial={shouldReduceMotion ? { pathLength: 1 } : { pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ delay: 0.8, duration: 1.4, ease: "easeOut" }}
+                    />
+                    {/* Sharp Main Layer */}
+                    <motion.path
+                      d="M 0,5 L 100,5"
+                      stroke="url(#underline-gradient)"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      initial={shouldReduceMotion ? { pathLength: 1 } : { pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ delay: 0.7, duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                    />
+                    <defs>
+                      <linearGradient id="underline-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#818cf8" />
+                        <stop offset="60%" stopColor="#a5b4fc" stopOpacity="0.8" />
+                        <stop offset="100%" stopColor="#a5b4fc" stopOpacity="0" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </span>
+              </span>
+            </motion.h1>
 
-        {/* Product screenshot mockup with scroll parallax */}
-        <motion.div 
-          ref={screenshotRef}
-          style={{ y: shouldReduceMotion ? 0 : screenshotY }}
-          initial={{ opacity: 0.75 }}
-          whileHover={{ opacity: 0.95, scale: 1.005 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          className="mt-14 max-w-[1040px] w-full bg-[#0F0F15] border border-[#232333] hover:border-[#7C6FE0]/30 rounded-2xl overflow-hidden shadow-2xl hover:shadow-[#7C6FE0]/5 relative group select-none cursor-pointer mx-auto transition-all duration-500"
-        >
-          <div className="h-8 border-b border-[#232333] bg-[#0A0A0F] px-4 flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-[#232333]" />
-            <div className="w-2.5 h-2.5 rounded-full bg-[#232333]" />
-            <div className="w-2.5 h-2.5 rounded-full bg-[#232333]" />
-            <div className="w-32 h-4 rounded bg-[#13131A] ml-4" />
+            <motion.p 
+              variants={itemVariants}
+              className="text-sm md:text-base xl:text-lg text-[#62627A] max-w-lg leading-relaxed font-medium mx-auto lg:mx-0"
+            >
+              Simulate index impact with HypoPG, run sandboxed query plans, and catch performance regressions before production.
+            </motion.p>
+
+            <motion.div 
+              variants={itemVariants}
+              className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2 w-full"
+            >
+              <motion.button 
+                onClick={handleGetStarted}
+                whileHover={{ y: -2, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="group w-full sm:w-auto bg-[#6355C7] hover:bg-[#7C6FE0] text-white font-bold text-sm px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-[#7C6FE0]/15 hover:shadow-xl hover:shadow-[#7C6FE0]/30 flex items-center justify-center gap-2 cursor-pointer border border-[#7C6FE0]/20 duration-200"
+              >
+                Get started free
+                <IconArrowRight size={16} className="group-hover:translate-x-1 transition-transform duration-200" />
+              </motion.button>
+              
+              <motion.button
+                onClick={() => {
+                  document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                whileHover={{ y: -2, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="group w-full sm:w-auto bg-[#13131A]/60 hover:bg-[#1C1C24]/85 text-[#A1A1B5] hover:text-white font-bold text-sm px-8 py-3.5 rounded-xl border border-[#232333] hover:border-[#7C6FE0]/40 transition-all flex items-center justify-center gap-2 cursor-pointer duration-200 active:scale-[0.98] shadow-md"
+              >
+                See how it works
+                <IconChevronRight size={16} className="text-[#A1A1B5] group-hover:text-white group-hover:translate-x-0.5 transition-all duration-200" />
+              </motion.button>
+            </motion.div>
+
+            <motion.div 
+              variants={itemVariants}
+              className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-[#62627A] text-xs font-mono select-none w-full"
+            >
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Validated by HypoPG</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>
+                  <AnimatedCounter value={12480} />+ Queries Fixed
+                </span>
+              </div>
+            </motion.div>
+          </motion.div>
+
+          {/* Right Column - Tuning Simulator */}
+          <div className="lg:col-span-6 w-full flex justify-center z-10">
+            <div className="relative w-full max-w-[560px] lg:max-w-none group">
+              {/* Glowing gradient backdrops */}
+              <div className="absolute -inset-2 rounded-2xl bg-gradient-to-tr from-[#7C6FE0]/20 to-[#AD9EE0]/10 opacity-30 blur-3xl group-hover:opacity-40 transition duration-700 pointer-events-none" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] h-[320px] bg-[#6355C7]/8 rounded-full blur-[80px] pointer-events-none" />
+              
+              <motion.div
+                ref={screenshotRef}
+                style={{ y: shouldReduceMotion ? 0 : screenshotY }}
+                initial={{ opacity: 0, scale: 0.96, x: 20 }}
+                animate={{ opacity: 1, scale: 1, x: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                whileHover={{ y: -3 }}
+                className="w-full"
+              >
+                <TuningSimulator />
+              </motion.div>
+            </div>
           </div>
-          <div className="relative">
-            <img 
-              src="/workspace-mockup.png" 
-              alt="Querion Workspace Mockup" 
-              className="w-full h-[540px] object-cover object-top" 
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#09090D] via-transparent to-transparent" />
-          </div>
-        </motion.div>
+          
+        </div>
       </header>
 
       {/* 3. FEATURES SECTION */}

@@ -1,12 +1,14 @@
 import os
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
-# Load environment variables
-load_dotenv()
+# Load environment variables from the absolute path relative to this file
+env_path = Path(__file__).resolve().parent / ".env"
+load_dotenv(dotenv_path=env_path)
 
 # Import routers, DB init, and rate limiter
 from routers.analyze import router as analyze_router
